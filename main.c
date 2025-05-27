@@ -1,6 +1,8 @@
 #include "hardware/pwm.h"
 #include "pico/stdlib.h"
+#include "memory.h"
 
+#include <pico/stdio.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -10,6 +12,8 @@
 #define BUZZ_PIN 20
 
 int main() {
+  stdio_init_all();
+
   gpio_init(BUZZ_PIN);
   gpio_set_dir(BUZZ_PIN, GPIO_OUT);
 

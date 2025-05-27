@@ -19,7 +19,7 @@
 					"source" : ".",
 					"targetIndexes" : 
 					[
-						0
+						4
 					]
 				},
 				{
@@ -340,9 +340,9 @@
 					"source" : "/usr/share/pico-sdk/src/rp2040/boot_stage2",
 					"targetIndexes" : 
 					[
+						0,
 						1,
-						2,
-						3
+						2
 					]
 				},
 				{
@@ -977,7 +977,7 @@
 					"source" : "/usr/share/pico-sdk/src/rp2_common/pico_cyw43_driver",
 					"targetIndexes" : 
 					[
-						4,
+						3,
 						5
 					]
 				},
@@ -1200,10 +1200,10 @@
 					[
 						0
 					],
-					"name" : "audio_blink",
+					"name" : "nes_emu",
 					"targetIndexes" : 
 					[
-						0
+						4
 					]
 				},
 				{
@@ -1309,23 +1309,16 @@
 					"parentIndex" : 0,
 					"targetIndexes" : 
 					[
+						0,
 						1,
 						2,
 						3,
-						4,
 						5
 					]
 				}
 			],
 			"targets" : 
 			[
-				{
-					"directoryIndex" : 0,
-					"id" : "audio_blink::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-audio_blink-Release-8e335a18d1cd5bf3084a.json",
-					"name" : "audio_blink",
-					"projectIndex" : 0
-				},
 				{
 					"directoryIndex" : 20,
 					"id" : "bs2_default::@efaae0dfea37ab6992ce",
@@ -1353,6 +1346,13 @@
 					"jsonFile" : "target-cyw43_driver_picow_cyw43_bus_pio_spi_pio_h-Release-1142e6b4571181d5d9cd.json",
 					"name" : "cyw43_driver_picow_cyw43_bus_pio_spi_pio_h",
 					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "nes_emu::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-nes_emu-Release-0bd0f71c58810dc6cb8f.json",
+					"name" : "nes_emu",
+					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 77,
