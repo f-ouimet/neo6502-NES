@@ -13,11 +13,11 @@ pico_sdk_init()
 
 add_executable(nes_emu
     main.c
-    memory.c
+    mem.c
 )
 
 target_include_directories(nes_emu PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}   #find memory.h in the project root
+    ${CMAKE_CURRENT_LIST_DIR}   #find mem.h in the project root
 )
 
 # pull in picostdlib

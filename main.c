@@ -1,15 +1,14 @@
-#include "hardware/pwm.h"
-#include "pico/stdlib.h"
-#include "memory.h"
 
+#include <hardware/gpio.h>
 #include <pico/stdio.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <pico/time.h>
+#include <pico/stdlib.h>
 
 #define GPIO_ON 1
 #define GPIO_OFF 0
 
 #define BUZZ_PIN 20
+
 
 int main() {
   stdio_init_all();
