@@ -1,20 +1,23 @@
 #ifndef MEM_H_
 #define MEM_H_
 
-#include <stdint.h>
 #include <hardware/gpio.h>
 #include <pico/stdio.h>
 #include <pico/time.h>
+#include <stdint.h>
+
+#define OE1_PIN 8
+#define OE2_PIN 9
+#define OE3_PIN 10
 
 #define RW_PIN 11
 #define PHI2_PIN 21
 
-#define ADDR_BASE 0     // A0-A15 on GPIO0-GPIO15
-#define DATA_BASE 16    // D0-D7 on GPIO16-GPIO23
+#define MEM_BASE 0 // GPIO 0 to 7 for memory and address access
 
-#define RAM_MEM_SIZE 2048 //size of RAM
+#define RAM_MEM_SIZE 2048 // size of NES RAM (excluding mirroring)
 
-uint8_t *mem_init();
+void mem_init();
 
 uint8_t *get_mem();
 
