@@ -11,20 +11,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Init SDK
 pico_sdk_init()
 
-add_executable(nes_emu
-    main.c
-    mem.c
-)
+add_executable(nes_emu main.c mem.c)
 
-target_include_directories(nes_emu PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}   #find mem.h in the project root
+target_include_directories(
+  nes_emu PRIVATE ${CMAKE_CURRENT_LIST_DIR} # find mem.h in the project root
 )
 
 # pull in picostdlib
-target_link_libraries(nes_emu 
-    pico_stdlib 
-    hardware_pwm
-)
+target_link_libraries(nes_emu pico_stdlib hardware_pwm)
 
 # create bin file, hex file, etc.
 pico_add_extra_outputs(nes_emu)
