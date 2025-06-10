@@ -73,6 +73,7 @@ dkms.conf
 *.lai
 
 # Executables
+build/
 
 ### CMake ###
 CMakeLists.txt.user

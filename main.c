@@ -17,11 +17,49 @@ int main() {
   gpio_init(BUZZ_PIN);
   gpio_set_dir(BUZZ_PIN, GPIO_OUT);
 
+  uint8_t *ram = get_mem();
+  if (!ram) {
+    printf("Mem alloc failed\n");
+    return 1;
+  }
+
+  static uint16_t addr;
+  static bool rw;
+  static uint8_t data;
+
   while (true) {
     // test square wave to see if program halts
     gpio_put(BUZZ_PIN, 1);
-    sleep_us(500);
+    sleep_us(1000);
     gpio_put(BUZZ_PIN, 0);
-    sleep_us(500);
+    sleep_us(1000);
+    gpio_put(BUZZ_PIN, 1);
+    sleep_us(1000);
+    gpio_put(BUZZ_PIN, 0);
+    sleep_us(1000);
+    // preload in ram for test
+    ram[0x8000] = 0xA9;
+    ram[0x8001] = 0x42;
+    ram[0x8002] = 0x8D;
+    ram[0x8003] = 0x00;
+    ram[0x8004] = 0x20;
+    ram[0xFFFC] = 0x00;
+    ram[0xFFFD] = 0x80;
+    // cpu tick
+    cpu_clk_tick(&addr, &rw);
+    // emulate mem instructions
+    if (rw) {
+      set_data(ram[addr]);
+    } else {
+      data = get_data();
+      ram[addr] = data;
+    }
+
+    // test prints
+    printf("test init! \n");
+    printf("add 2000: %x\n", ram[0x2000]);
+    printf("rw: %d\n", rw);
+
+    sleep_ms(1000);
   }
 }
