@@ -11,10 +11,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Init SDK
 pico_sdk_init()
 
-add_executable(nes_emu main.c mem.c)
+add_executable(nes_emu src/main.c src/mem.c)
 
 target_include_directories(
-  nes_emu PRIVATE ${CMAKE_CURRENT_LIST_DIR} # find mem.h in the project root
+  nes_emu PRIVATE src/ # find mem.h in the project root
 )
 
 # pull in picostdlib and others
