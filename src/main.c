@@ -2,6 +2,8 @@
 #include "cpu_utils.h"
 #include "mem.h"
 #include <hardware/gpio.h>
+#include <hardware/structs/io_bank0.h>
+#include <hardware/uart.h>
 #include <pico/stdio.h>
 #include <pico/stdlib.h>
 #include <pico/time.h>
@@ -13,6 +15,10 @@
 
 int main() {
   stdio_init_all();
+
+  gpio_set_function(28, GPIO_FUNC_UART);
+  gpio_set_function(29, GPIO_FUNC_UART);
+  printf("UART OK \n");
   cpu_init();
   gpio_init(BUZZ_PIN);
   gpio_set_dir(BUZZ_PIN, GPIO_OUT);

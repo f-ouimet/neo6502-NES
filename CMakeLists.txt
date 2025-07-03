@@ -20,7 +20,6 @@ target_include_directories(
 # pull in picostdlib and others
 target_link_libraries(nes_emu pico_stdlib hardware_pwm)
 
-pico_enable_stdio_usb(nes_emu 1)
 pico_enable_stdio_uart(nes_emu 0)
 
 # create bin file, hex file, etc.
