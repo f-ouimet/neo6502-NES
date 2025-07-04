@@ -2,6 +2,8 @@
 #include "cpu_utils.h"
 #include "mem.h"
 #include <hardware/gpio.h>
+#include <hardware/structs/io_bank0.h>
+#include <hardware/uart.h>
 #include <pico/stdio.h>
 #include <pico/stdlib.h>
 #include <pico/time.h>
@@ -11,23 +13,39 @@
 
 #define BUZZ_PIN 20
 
+char buffer[50];
+
 int main() {
   stdio_init_all();
+  uart_init(uart0, 9600);
+  gpio_set_function(28, GPIO_FUNC_UART);
+  gpio_set_function(29, GPIO_FUNC_UART);
+  uart_puts(uart0, "UART_INIT_OK \n");
   cpu_init();
   gpio_init(BUZZ_PIN);
   gpio_set_dir(BUZZ_PIN, GPIO_OUT);
 
   uint8_t *ram = get_mem();
   if (!ram) {
-    printf("Mem alloc failed\n");
+    uart_puts(uart0, "Mem alloc failed\n");
     return 1;
   }
-
+  memset(ram, 0, 65536);
+  // preload in ram for test
+  ram[0x8000] = 0xA9;
+  ram[0x8001] = 0x42;
+  ram[0x8002] = 0x8D;
+  ram[0x8003] = 0x00;
+  ram[0x8004] = 0x20;
+  // reset vector
+  ram[0xFFFC] = 0x00;
+  ram[0xFFFD] = 0x80;
   static uint16_t addr;
   static bool rw;
   static uint8_t data;
 
   while (true) {
+    uart_putc(uart0, 'c');
     // test square wave to see if program halts
     gpio_put(BUZZ_PIN, 1);
     sleep_us(1000);
@@ -37,14 +55,7 @@ int main() {
     sleep_us(1000);
     gpio_put(BUZZ_PIN, 0);
     sleep_us(1000);
-    // preload in ram for test
-    ram[0x8000] = 0xA9;
-    ram[0x8001] = 0x42;
-    ram[0x8002] = 0x8D;
-    ram[0x8003] = 0x00;
-    ram[0x8004] = 0x20;
-    ram[0xFFFC] = 0x00;
-    ram[0xFFFD] = 0x80;
+
     // cpu tick
     cpu_clk_tick(&addr, &rw);
     // emulate mem instructions
@@ -56,9 +67,12 @@ int main() {
     }
 
     // test prints
-    printf("test init! \n");
-    printf("add 2000: %x\n", ram[0x2000]);
-    printf("rw: %d\n", rw);
+    sprintf(buffer, "test init! \n");
+    uart_puts(uart0, buffer);
+    sprintf(buffer, "add 2000: %x\n", ram[0x2000]);
+    uart_puts(uart0, buffer);
+    sprintf(buffer, "rw: %d\n", rw);
+    uart_puts(uart0, buffer);
 
     sleep_ms(1000);
   }
