@@ -11,14 +11,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Init SDK
 pico_sdk_init()
 
-add_executable(nes_emu src/main.c src/mem.c)
+add_executable(nes_emu src/main.c src/mem.c src/hid_driver.c)
 
 target_include_directories(
   nes_emu PRIVATE src/ # find mem.h in the project root
 )
 
 # pull in picostdlib and others
-target_link_libraries(nes_emu pico_stdlib hardware_pwm)
+target_link_libraries(nes_emu PUBLIC pico_stdlib hardware_pwm tinyusb_host
+                                     tinyusb_board)
 
 pico_enable_stdio_uart(nes_emu 0)
 
