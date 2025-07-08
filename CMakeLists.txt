@@ -20,17 +20,6 @@ add_executable(nes_emu src/main.c src/mem.c)
 
 add_subdirectory(lib/picodvi/software/libdvi) # PICODVI LIBRARY
 
-# pull in picostdlib and others
-target_link_libraries(
-  nes_emu
-  PUBLIC pico_stdlib
-         hardware_pwm
-         tinyusb_host
-         hardware_dma
-         hardware_pio
-         libdvi
-         tinyusb_board)
-
 add_library(fatfs INTERFACE)
 target_sources(
   fatfs
@@ -42,6 +31,18 @@ target_include_directories(fatfs INTERFACE ${tinyusb_src_dir}/lib/fatfs/source/)
 target_include_directories(
   nes_emu PRIVATE src/ # find mem.h in the project root
 )
+
+# pull in picostdlib and others
+target_link_libraries(
+  nes_emu
+  PUBLIC pico_stdlib
+         hardware_pwm
+         tinyusb_host
+         hardware_dma
+         hardware_pio
+         libdvi
+         tinyusb_board
+         fatfs)
 pico_enable_stdio_uart(nes_emu 0)
 
 # create bin file, hex file, etc.

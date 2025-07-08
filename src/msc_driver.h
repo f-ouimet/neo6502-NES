@@ -1,10 +1,25 @@
-
+#include "ff.h"
+// then include diskio
+#include "diskio.h"
 #include <hardware/uart.h>
-#include <inttypes.h>
 #include <stdio.h>
 #include <tusb.h>
 
-char debug_str[100];
+// TODO: PROPER LICENSING
+
+char debug_str[256];
+static FATFS fs;
+static FILINFO fno;
+static FATFS msc_fatfs_volumes[CFG_TUH_DEVICE_MAX];
+static volatile bool msc_volume_busy[CFG_TUH_DEVICE_MAX];
+static scsi_inquiry_resp_t msc_inquiry_resp;
+bool msc_inquiry_complete = false;
+void list_files(const char *path);
+/*
+ *
+ * Felix Ouimet
+ */
+
 /*
  * The MIT License (MIT)
  *
@@ -30,10 +45,68 @@ char debug_str[100];
  *
  */
 
-/*
- *
- * Felix Ouimet
- */
+static void wait_for_disk_io(BYTE pdrv) {
+  while (msc_volume_busy[pdrv]) {
+    tuh_task();
+  }
+}
+
+static bool disk_io_complete(uint8_t dev_addr,
+                             tuh_msc_complete_data_t const *cb_data) {
+  (void)cb_data;
+  msc_volume_busy[dev_addr] = false;
+  return true;
+}
+
+DSTATUS disk_status(BYTE pdrv) {
+  uint8_t dev_addr = pdrv;
+  return tuh_msc_mounted(dev_addr) ? 0 : STA_NODISK;
+}
+
+DSTATUS disk_initialize(BYTE pdrv) {
+  (void)(pdrv);
+  return 0;
+}
+
+DRESULT disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count) {
+  uint8_t const dev_addr = pdrv;
+  uint8_t const lun = 0;
+  msc_volume_busy[pdrv] = true;
+  tuh_msc_read10(dev_addr, lun, buff, sector, (uint16_t)count, disk_io_complete,
+                 0);
+  wait_for_disk_io(pdrv);
+  return RES_OK;
+}
+
+DRESULT disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count) {
+  uint8_t const dev_addr = pdrv;
+  uint8_t const lun = 0;
+  msc_volume_busy[pdrv] = true;
+  tuh_msc_write10(dev_addr, lun, buff, sector, (uint16_t)count,
+                  disk_io_complete, 0);
+  wait_for_disk_io(pdrv);
+  return RES_OK;
+}
+
+DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void *buff) {
+  uint8_t const dev_addr = pdrv;
+  uint8_t const lun = 0;
+  switch (cmd) {
+  case CTRL_SYNC:
+    return RES_OK;
+  case GET_SECTOR_COUNT:
+    *((DWORD *)buff) = (WORD)tuh_msc_get_block_count(dev_addr, lun);
+    return RES_OK;
+  case GET_SECTOR_SIZE:
+    *((WORD *)buff) = (WORD)tuh_msc_get_block_size(dev_addr, lun);
+    return RES_OK;
+  case GET_BLOCK_SIZE:
+    *((DWORD *)buff) = 1; // 1 sector
+    return RES_OK;
+  default:
+    return RES_PARERR;
+  }
+}
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
@@ -65,6 +138,17 @@ bool inquiry_complete_cb(uint8_t dev_addr,
   sprintf(debug_str, "Block Count = %" PRIu32 ", Block Size: %" PRIu32 "\r\n",
           block_count, block_size);
   uart_puts(uart0, debug_str);
+  char drive_path[3] = "0:";
+  drive_path[0] += dev_addr;
+  FRESULT result = f_mount(&msc_fatfs_volumes[dev_addr], drive_path, 1);
+  char s[2];
+  if (FR_OK != f_getcwd(s, 2)) {
+    f_chdrive(drive_path);
+    f_chdir("/");
+    list_files("/");
+    sprintf(debug_str, "[USB] Reached end of files");
+    uart_puts(uart0, debug_str);
+  }
   return true;
 } //------------- IMPLEMENTATION -------------//
 void tuh_msc_mount_cb(uint8_t dev_addr) {
@@ -75,6 +159,9 @@ void tuh_msc_mount_cb(uint8_t dev_addr) {
 }
 
 void tuh_msc_umount_cb(uint8_t dev_addr) {
+  char drive_path[3] = "0:";
+  drive_path[0] += dev_addr;
+  f_unmount(drive_path);
   (void)dev_addr;
   sprintf(debug_str, "A MassStorage device is unmounted\r\n");
   uart_puts(uart0, debug_str);
@@ -83,3 +170,34 @@ void tuh_msc_umount_cb(uint8_t dev_addr) {
 /************************************
  * Custom funcs here
  ************************************/
+
+// Function to list files recursively
+void list_files(const char *path) {
+  FRESULT res;
+  DIR dir;
+  res = f_opendir(&dir, path);
+  if (res != FR_OK) {
+    sprintf(debug_str, "Failed to open directory: %s\n", path);
+    uart_puts(uart0, debug_str);
+    return;
+  }
+
+  while (1) {
+    res = f_readdir(&dir, &fno);
+    if (res != FR_OK || fno.fname[0] == 0)
+      break;
+
+    if (fno.fattrib & AM_DIR) {
+      sprintf(debug_str, "[DIR ] %s/%s\n", path, fno.fname);
+      uart_puts(uart0, debug_str);
+      char new_path[256];
+      snprintf(new_path, sizeof(new_path), "%s/%s", path, fno.fname);
+      list_files(new_path); // recurse
+    } else {
+      sprintf(debug_str, "[FILE] %s/%s\n", path, fno.fname);
+      uart_puts(uart0, debug_str);
+    }
+  }
+
+  f_closedir(&dir);
+}

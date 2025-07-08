@@ -1,5 +1,11 @@
 
 #include "cpu_utils.h"
+// INCLUDE FIRST
+#include "ff.h"
+// INCLUDE DISKIO AFTER
+#include "diskio.h"
+
+// FatFS header from TinyUSB
 #include "hid_driver.h"
 #include "mem.h"
 #include "msc_driver.h"
