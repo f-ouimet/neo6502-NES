@@ -2,6 +2,7 @@
 #include "cpu_utils.h"
 #include "hid_driver.h"
 #include "mem.h"
+#include "msc_driver.h"
 #include "tusb_config.h"
 #include <hardware/gpio.h>
 #include <hardware/structs/io_bank0.h>

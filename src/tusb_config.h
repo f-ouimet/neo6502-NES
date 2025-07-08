@@ -27,14 +27,14 @@ extern "C" {
 #define CFG_TUH_ENUMERATION_BUFSIZE 256
 
 // Host class drivers enabled
-#define CFG_TUH_HUB 1
+#define CFG_TUH_HUB 2
 #define CFG_TUH_MSC 1
 #define CFG_TUH_HID 2
 #define CFG_TUH_CDC 0
 #define CFG_TUH_VENDOR 0
 
 // Support up to 3 devices behind 1 hub
-#define CFG_TUH_DEVICE_MAX 4 // 3 devices + 1 hub
+#define CFG_TUH_DEVICE_MAX 5 // 3 devices + 1 hub
 
 // Mass Storage config
 #define CFG_TUH_MSC_MAXLUN 4
