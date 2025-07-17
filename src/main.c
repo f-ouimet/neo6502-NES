@@ -5,11 +5,11 @@
 // INCLUDE DISKIO AFTER
 #include "diskio.h"
 
-// FatFS header from TinyUSB
 #include "hid_driver.h"
 #include "mem.h"
 #include "msc_driver.h"
 #include "tusb_config.h"
+#include "video.h"
 #include <hardware/gpio.h>
 #include <hardware/structs/io_bank0.h>
 #include <hardware/uart.h>
@@ -20,6 +20,8 @@
 
 #define GPIO_ON 1
 #define GPIO_OFF 0
+#define UART_TX_PIN 28
+#define UART_RX_PIN 29
 
 #define BUZZ_PIN 20
 
@@ -27,10 +29,11 @@ char buffer[100];
 
 int main() {
 
-  stdio_init_all();
+  video_init();
+
   uart_init(uart0, 9600);
-  gpio_set_function(28, GPIO_FUNC_UART);
-  gpio_set_function(29, GPIO_FUNC_UART);
+  gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
+  gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
   uart_puts(uart0, "UART_INIT_OK \n");
 
   tuh_init(BOARD_TUH_RHPORT);
@@ -58,8 +61,12 @@ int main() {
   static uint8_t data;
 
   while (true) {
+
+    // tinyusb will call the appropriate task depending on events
     tuh_task();
-    // uart_putc(uart0, 'c');
+
+    // uart_putc(uart0, 'c'); //clock test
+    //
     //  test square wave to see if program halts
     gpio_put(BUZZ_PIN, 1);
     sleep_us(1000);
@@ -87,5 +94,8 @@ int main() {
     // uart_puts(uart0, buffer);
     // sprintf(buffer, "rw: %d\n", rw);
     // uart_puts(uart0, buffer);
+    //
+
+    video_task();
   }
 }
